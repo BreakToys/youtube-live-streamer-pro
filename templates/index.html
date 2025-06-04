@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YouTube Live Streamer Pro</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div class="app-wrapper">
+        <nav class="navbar">
+            <div class="navbar-brand">
+                <i class="fab fa-youtube"></i>
+                <span>YouTube Live Streamer Pro</span>
+            </div>
+            <div class="navbar-status" id="streamStatus">
+                <span class="status-dot"></span>
+                <span class="status-text">Ready</span>
+            </div>
+        </nav>
+
+        <div class="main-content">
+            <div class="sidebar">
+                <div class="card setup-card">
+                    <div class="card-header">
+                        <i class="fas fa-cog"></i>
+                        <h2>Stream Setup</h2>
+                    </div>
+                    <form id="streamForm" class="stream-form">
+                        <div class="form-group">
+                            <label for="drive_link">
+                                <i class="fab fa-google-drive"></i>
+                                Google Drive Video URL
+                            </label>
+                            <input 
+                                type="url" 
+                                id="drive_link" 
+                                name="drive_link" 
+                                placeholder="Enter your Google Drive video link"
+                                required
+                            >
+                            <small class="help-text">Make sure the video file is publicly accessible</small>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="stream_key">
+                                <i class="fas fa-key"></i>
+                                YouTube Stream Key
+                            </label>
+                            <div class="stream-key-input">
+                                <input 
+                                    type="password" 
+                                    id="stream_key" 
+                                    name="stream_key" 
+                                    placeholder="Enter your YouTube stream key"
+                                    required
+                                >
+                                <button type="button" class="toggle-password" aria-label="Toggle stream key visibility">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                            </div>
+                            <small class="help-text">Find this in your YouTube Studio's Stream settings</small>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="resolution">
+                                <i class="fas fa-tv"></i>
+                                Stream Quality
+                            </label>
+                            <select id="resolution" name="resolution" required>
+                                <option value="360">360p</option>
+                                <option value="480">480p</option>
+                                <option value="720" selected>720p HD</option>
+                                <option value="1080">1080p Full HD</option>
+                                <option value="2160">4K Ultra HD</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="orientation">
+                                <i class="fas fa-mobile-alt"></i>
+                                Stream Orientation
+                            </label>
+                            <select id="orientation" name="orientation" required>
+                                <option value="horizontal" selected>Horizontal (Landscape)</option>
+                                <option value="vertical">Vertical (Portrait)</option>
+                            </select>
+                            <small class="help-text">Choose vertical for mobile-friendly content</small>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="auto_stop">
+                                <i class="fas fa-clock"></i>
+                                Auto-Stop Timer
+                            </label>
+                            <div class="auto-stop-container">
+                                <input 
+                                    type="number" 
+                                    id="auto_stop" 
+                                    name="auto_stop" 
+                                    min="0" 
+                                    max="24" 
+                                    step="0.5" 
+                                    placeholder="e.g., 10"
+                                >
+                                <span class="unit">hours</span>
+                            </div>
+                            <small class="help-text">Leave empty for no auto-stop (max 24 hours)</small>
+                        </div>
+
+                        <div class="button-group">
+                            <button type="button" id="startButton" class="btn btn-primary">
+                                <i class="fas fa-play"></i>
+                                Start Streaming
+                            </button>
+                            <button type="button" id="stopButton" class="btn btn-danger" disabled>
+                                <i class="fas fa-stop"></i>
+                                Stop Streaming
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <div class="main-panel">
+                <div class="preview-section">
+                    <div class="card preview-card">
+                        <div class="card-header">
+                            <i class="fas fa-video"></i>
+                            <h2>Stream Preview</h2>
+                            <div class="preview-controls">
+                                <button id="muteButton" class="btn btn-icon" aria-label="Mute">
+                                    <i class="fas fa-volume-up"></i>
+                                </button>
+                                <button id="fullscreenButton" class="btn btn-icon" aria-label="Fullscreen">
+                                    <i class="fas fa-expand"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="video-container">
+                            <video id="previewVideo" playsinline>
+                                Your browser does not support the video element.
+                            </video>
+                            <div class="video-overlay" id="videoOverlay">
+                                <i class="fas fa-play-circle"></i>
+                                <span>Preview will start when streaming begins</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card stream-info-card">
+                        <div class="card-header">
+                            <i class="fas fa-chart-line"></i>
+                            <h2>Stream Information</h2>
+                        </div>
+                        <div class="stream-stats">
+                            <div class="stat-item">
+                                <i class="fas fa-clock"></i>
+                                <div class="stat-content">
+                                    <label>Duration</label>
+                                    <span id="streamDuration">00:00:00</span>
+                                </div>
+                            </div>
+                            <div class="stat-item">
+                                <i class="fas fa-hourglass-half"></i>
+                                <div class="stat-content">
+                                    <label>Time Remaining</label>
+                                    <span id="timeRemainingValue">--:--:--</span>
+                                </div>
+                            </div>
+                            <div class="stat-item">
+                                <i class="fas fa-signal"></i>
+                                <div class="stat-content">
+                                    <label>Quality</label>
+                                    <span id="streamQuality">720p HD</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>
